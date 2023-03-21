@@ -2,7 +2,7 @@ AUTOMATIC1111 stable diffusion webui 10万中文tag+自动提示插件 chinese t
 
 10万tag 自动提示简体中文翻译(**安装时需要卸载或关闭已有的a1111-sd-webui-tagcomplete 插件不然会冲突**，删除位置：stable-diffusion-webui\extensions\安装时需要卸载或关闭已有的a1111-sd-webui-tagcomplete)
 
-推荐stable diffusion学习QQ群：451641031，925505542，680518267
+<就是我个人更新了一些词库，方便更新和安装使用>
 
 新增输入英文同步出中文翻译词功能：
 
