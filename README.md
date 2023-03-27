@@ -1,6 +1,7 @@
-AUTOMATIC1111 stable diffusion webui 10万中文tag+自动提示插件 chinese tag plugin
+AUTOMATIC1111 stable diffusion webui 自动提示插件 chinese tag plugin
 
-10万tag 自动提示简体中文翻译(**安装时需要卸载或关闭已有的a1111-sd-webui-tagcomplete 插件不然会冲突**，删除位置：stable-diffusion-webui\extensions\安装时需要卸载或关闭已有的a1111-sd-webui-tagcomplete)
+自动提示简体中文翻译(**安装时需要卸载或关闭已有的a1111-sd-webui-tagcomplete 插件不然会冲突**，
+删除位置：stable-diffusion-webui\extensions\安装时需要卸载或关闭已有的a1111-sd-webui-tagcomplete)
 
 <就是我个人更新了一些词库，方便更新和安装使用>
 
@@ -45,7 +46,6 @@ Extensions -> Install from URL 填写git地址：https://github.com/scj008/sd-we
 ![图2](https://raw.githubusercontent.com/inlhx/a1111-sd-webui-tagcomplete-10w/main/img/4.png)
 
 ![图3](https://raw.githubusercontent.com/inlhx/a1111-sd-webui-tagcomplete-10w/main/img/5.png)
-
 
 ![图4](https://raw.githubusercontent.com/inlhx/a1111-sd-webui-tagcomplete-10w/main/img/1.png)
 
