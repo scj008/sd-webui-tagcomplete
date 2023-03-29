@@ -1,4 +1,4 @@
-﻿const styleColors = {
+const styleColors = {
     "--results-bg": ["#0b0f19", "#ffffff"],
     "--results-border-color": ["#4b5563", "#e5e7eb"],
     "--results-border-width": ["1px", "1.5px"],
@@ -206,15 +206,14 @@ async function syncOptions() {
 // Create the result list div and necessary styling
 function createResultsDiv(textArea) {
     let resultsDiv = document.createElement("div");
-    let resultsList = document.createElement("ul");
+    let resultsList = document.createElement('ul');
 
     let textAreaId = getTextAreaIdentifier(textArea);
     let typeClass = textAreaId.replaceAll(".", " ");
 
     resultsDiv.style.maxHeight = `${CFG.maxResults * 50}px`;
-    resultsDiv.setAttribute("class", `autocompleteResults ${typeClass} notranslate`);
-    resultsDiv.setAttribute("translate", "no");
-    resultsList.setAttribute("class", "autocompleteResultsList");
+    resultsDiv.setAttribute('class', `autocompleteResults ${typeClass}`);
+    resultsList.setAttribute('class', 'autocompleteResultsList');
     resultsDiv.appendChild(resultsList);
 
     return resultsDiv;
@@ -234,7 +233,7 @@ function showResults(textArea) {
     if (CFG.slidingPopup) {
         let caretPosition = getCaretCoordinates(textArea, textArea.selectionEnd).left;
         let offset = Math.min(textArea.offsetLeft - textArea.scrollLeft + caretPosition, textArea.offsetWidth - resultsDiv.offsetWidth);
-    
+
         resultsDiv.style.left = `${offset}px`;
     } else {
         if (resultsDiv.style.left)
@@ -244,9 +243,6 @@ function showResults(textArea) {
 function hideResults(textArea) {
     let textAreaId = getTextAreaIdentifier(textArea);
     let resultsDiv = gradioApp().querySelector('.autocompleteResults' + textAreaId);
-    
-    if (!resultsDiv) return;
-    
     resultsDiv.style.display = "none";
     selectedTag = null;
 }
@@ -254,33 +250,29 @@ function hideResults(textArea) {
 // Function to check activation criteria
 function isEnabled() {
     if (CFG.activeIn.global) {
-        // Skip check if the current model was not correctly detected, since it could wrongly disable the script otherwise
-        if (!currentModelName || !currentModelHash) return true;
-        
         let modelList = CFG.activeIn.modelList
             .split(",")
             .map(x => x.trim())
             .filter(x => x.length > 0);
-        
+
         let shortHash = currentModelHash.substring(0, 10);
-        let modelNameWithoutHash = currentModelName.replace(/\[.*\]$/g, "").trim();
         if (CFG.activeIn.modelListMode.toLowerCase() === "blacklist") {
             // If the current model is in the blacklist, disable
-            return modelList.filter(x => x === currentModelName || x === modelNameWithoutHash || x === currentModelHash || x === shortHash).length === 0;
+            return modelList.filter(x => x === currentModelName || x === currentModelHash || x === shortHash).length === 0;
         } else {
             // If the current model is in the whitelist, enable.
             // An empty whitelist is ignored.
-            return modelList.length === 0 || modelList.filter(x => x === currentModelName || x === modelNameWithoutHash || x === currentModelHash || x === shortHash).length > 0;
+            return modelList.length === 0 || modelList.filter(x => x === currentModelName || x === currentModelHash || x === shortHash).length > 0;
         }
     } else {
         return false;
     }
 }
 
-const WEIGHT_REGEX = /[([]([^()[\]:|]+)(?::(?:\d+(?:\.\d+)?|\.\d+))?[)\]]/g;
+const WEIGHT_REGEX = /[([]([^,()[\]:| ]+)(?::(?:\d+(?:\.\d+)?|\.\d+))?[)\]]/g;
 const POINTY_REGEX = /<[^\s,<](?:[^\t\n\r,<>]*>|[^\t\n\r,> ]*)/g;
 const COMPLETED_WILDCARD_REGEX = /__[^\s,_][^\t\n\r,_]*[^\s,_]__[^\s,_]*/g;
-const NORMAL_TAG_REGEX = /[^\s,|<>)\]]+|</g;
+const NORMAL_TAG_REGEX = /[^\s,|<>]+|</g;
 const TAG_REGEX = new RegExp(`${POINTY_REGEX.source}|${COMPLETED_WILDCARD_REGEX.source}|${NORMAL_TAG_REGEX.source}`, "g");
 
 // On click, insert the tag into the prompt textbox with respect to the cursor position
@@ -337,7 +329,7 @@ async function insertTextAtCursor(textArea, result, tagword) {
 
     // Update previous tags with the edited prompt to prevent re-searching the same term
     let weightedTags = [...newPrompt.matchAll(WEIGHT_REGEX)]
-            .map(match => match[1]);
+        .map(match => match[1]);
     let tags = newPrompt.match(TAG_REGEX)
     if (weightedTags !== null) {
         tags = tags.filter(tag => !weightedTags.some(weighted => tag.includes(weighted)))
@@ -355,6 +347,84 @@ async function insertTextAtCursor(textArea, result, tagword) {
     if (!hideBlocked && isVisible(textArea)) {
         hideResults(textArea);
     }
+
+    ///aliu
+    // for
+    // document.getElementById("txt2img_prompt")
+    // textArea.appendChild(inputElement)
+
+    // updateInput(tb_type)
+    inputWords(textArea)
+    // debugger;
+}
+
+//create by aliu
+function inputWords(textArea) {
+    let textAreatxt = textArea.value
+    let idx = "";
+    if (textArea.parentNode.parentNode.id=="txt2img_neg_prompt") {
+        idx = "txt2img_neg_prompt";
+    } else {
+        idx = "txt2img_prompt";
+    }
+    let alertPromptSpan = gradioApp().querySelector("#" + idx + "Span")
+    if (textAreatxt == '') {
+        if (alertPromptSpan != null) {
+            alertPromptSpan.innerHTML = "";
+        }
+        return '';
+    }
+    textAreatxt = textAreatxt
+        .replaceAll("\\(", "(")
+        .replaceAll("\\)", ")")
+        .replaceAll("\\[", "[")
+        .replaceAll("\\]", "]")
+        .replaceAll(" ,", ",")
+        .replaceAll(", ", ",")
+        .replaceAll(",)", ")")
+        .replaceAll(" )", ")")
+        .replaceAll("( ", "(");
+    let txtarr = textAreatxt.split(",");
+    let alertPrompt = "";
+    for (i = 0; i < txtarr.length; i++) {
+        let wordtxt = txtarr[i]
+        if (wordtxt == '') {
+            continue;
+        }
+
+        wordtxt = wordtxt.replaceAll(" ", "_")
+        let pattern = /\((\w+):\d+\)/;
+        wordtxt = wordtxt.replace(pattern, "$1");
+        wordtxt = wordtxt.replaceAll("(", "")
+        wordtxt = wordtxt.replaceAll(")", "")
+        wordtxt = wordtxt.replaceAll(",", "")
+        var tArray = [...translations];
+        if (tArray) {
+            let translationKey = [...translations].find(pair => pair[0].includes(wordtxt));
+            wordtxt = wordtxt.replaceAll("_", " ")
+            if (translationKey) {
+                alertPrompt += wordtxt + "=>" + translationKey[1];
+            } else {
+                alertPrompt += wordtxt;
+            }
+            alertPrompt += ",";
+        }
+        // textAreatxt = textAreatxt.replaceAll(" ", "_");//.replaceAll("","").replaceAll("","").replaceAll("","").replaceAll("","")
+    }
+
+    let alertPromptDiv = gradioApp().querySelector("#" + idx);
+    if (!alertPromptSpan) {
+        var spanx = document.createElement("span");
+        spanx.id = idx + "Span";
+        spanx.style=" box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);background-color:lightyellow;color: #492615;  border-bottom:3px solid #A67C52;";
+	spanx.className="gr-box";
+        spanx.innerHTML = alertPrompt;
+        alertPromptDiv.appendChild(spanx);
+        console.log(alertPrompt)
+    } else {
+        alertPromptSpan.innerHTML = alertPrompt;
+    }
+
 }
 
 function addResultsToList(textArea, results, tagword, resetList) {
@@ -440,7 +510,7 @@ function addResultsToList(textArea, results, tagword, resetList) {
             // Only use alias result if it is one
             if (displayText.includes("➝"))
                 linkPart = displayText.split(" ➝ ")[1];
-            
+
             // Set link based on selected file
             let tagFileNameLower = tagFileName.toLowerCase();
             if (tagFileNameLower.startsWith("danbooru")) {
@@ -448,7 +518,7 @@ function addResultsToList(textArea, results, tagword, resetList) {
             } else if (tagFileNameLower.startsWith("e621")) {
                 wikiLink.href = `https://e621.net/wiki_pages/${linkPart}`;
             }
-            
+
             wikiLink.target = "_blank";
             flexDiv.appendChild(wikiLink);
         }
@@ -481,7 +551,7 @@ function addResultsToList(textArea, results, tagword, resetList) {
             if (postCount >= 1000000 || (postCount >= 1000 && postCount < 10000))
                 formatter = Intl.NumberFormat("en", { notation: "compact", minimumFractionDigits: 1, maximumFractionDigits: 1 });
             else
-                formatter = Intl.NumberFormat("en", {notation: "compact"});
+                formatter = Intl.NumberFormat("en", { notation: "compact" });
 
             let formattedCount = formatter.format(postCount);
 
@@ -501,7 +571,7 @@ function addResultsToList(textArea, results, tagword, resetList) {
                 else if (result.meta.startsWith("v2"))
                     itemText.classList.add("acEmbeddingV2");
             }
-                
+
             flexDiv.appendChild(metaDiv);
         }
 
@@ -635,51 +705,54 @@ async function autocomplete(textArea, prompt, fixedTag = null) {
         } else {
             searchRegex = new RegExp(`(^|[^a-zA-Z])${escapeRegExp(tagword)}`, 'i');
         }
+        // If onlyShowAlias is enabled, we don't need to include normal results
+        if (CFG.alias.onlyShowAlias) {
+            results = allTags.filter(x => x[3] && x[3].toLowerCase().search(searchRegex) > -1);
+        } else {
+            // Else both normal tags and aliases/translations are included depending on the config
+            let baseFilter = (x) => x[0].toLowerCase().search(searchRegex) > -1;
+            let aliasFilter = (x) => x[3] && x[3].toLowerCase().search(searchRegex) > -1;
+            let translationFilter = (x) => (translations.has(x[0]) && translations.get(x[0]).toLowerCase().search(searchRegex) > -1)
+                || x[3] && x[3].split(",").some(y => translations.has(y) && translations.get(y).toLowerCase().search(searchRegex) > -1);
 
-        // Both normal tags and aliases/translations are included depending on the config
-        let baseFilter = (x) => x[0].toLowerCase().search(searchRegex) > -1;
-        let aliasFilter = (x) => x[3] && x[3].toLowerCase().search(searchRegex) > -1;
-        let translationFilter = (x) => (translations.has(x[0]) && translations.get(x[0]).toLowerCase().search(searchRegex) > -1)
-            || x[3] && x[3].split(",").some(y => translations.has(y) && translations.get(y).toLowerCase().search(searchRegex) > -1);
-        
-        let fil;
-        if (CFG.alias.searchByAlias && CFG.translation.searchByTranslation)
-            fil = (x) => baseFilter(x) || aliasFilter(x) || translationFilter(x);
-        else if (CFG.alias.searchByAlias && !CFG.translation.searchByTranslation)
-            fil = (x) => baseFilter(x) || aliasFilter(x);
-        else if (CFG.translation.searchByTranslation && !CFG.alias.searchByAlias)
-            fil = (x) => baseFilter(x) || translationFilter(x);
-        else
-            fil = (x) => baseFilter(x);
+            let fil;
+            if (CFG.alias.searchByAlias && CFG.translation.searchByTranslation)
+                fil = (x) => baseFilter(x) || aliasFilter(x) || translationFilter(x);
+            else if (CFG.alias.searchByAlias && !CFG.translation.searchByTranslation)
+                fil = (x) => baseFilter(x) || aliasFilter(x);
+            else if (CFG.translation.searchByTranslation && !CFG.alias.searchByAlias)
+                fil = (x) => baseFilter(x) || translationFilter(x);
+            else
+                fil = (x) => baseFilter(x);
 
-        // Add final results
-        allTags.filter(fil).forEach(t => {
-            let result = new AutocompleteResult(t[0].trim(), ResultType.tag)
-            result.category = t[1];
-            result.count = t[2];
-            result.aliases = t[3];
-            results.push(result);
-        });
-
-        // Add extras
-        if (CFG.extra.extraFile) {
-            let extraResults = [];
-
-            extras.filter(fil).forEach(e => {
-                let result = new AutocompleteResult(e[0].trim(), ResultType.extra)
-                result.category = e[1] || 0; // If no category is given, use 0 as the default
-                result.meta = e[2] || "Custom tag";
-                result.aliases = e[3] || "";
-                extraResults.push(result);
+            // Add final results
+            allTags.filter(fil).forEach(t => {
+                let result = new AutocompleteResult(t[0].trim(), ResultType.tag)
+                result.category = t[1];
+                result.count = t[2];
+                result.aliases = t[3];
+                results.push(result);
             });
 
-            if (CFG.extra.addMode === "Insert before") {
-                results = extraResults.concat(results);
-            } else {
-                results = results.concat(extraResults);
+            // Add extras
+            if (CFG.extra.extraFile) {
+                let extraResults = [];
+
+                extras.filter(fil).forEach(e => {
+                    let result = new AutocompleteResult(e[0].trim(), ResultType.extra)
+                    result.category = e[1] || 0; // If no category is given, use 0 as the default
+                    result.meta = e[2] || "Custom tag";
+                    result.aliases = e[3] || "";
+                    extraResults.push(result);
+                });
+
+                if (CFG.extra.addMode === "Insert before") {
+                    results = extraResults.concat(results);
+                } else {
+                    results = results.concat(extraResults);
+                }
             }
         }
-        
         // Slice if the user has set a max result count
         if (!CFG.showAllResults) {
             results = results.slice(0, CFG.maxResults);
@@ -756,9 +829,6 @@ function navigateInList(textArea, event) {
         case keymap["ChooseSelected"]:
             if (selectedTag !== null) {
                 insertTextAtCursor(textArea, results[selectedTag], tagword);
-            } else {
-                hideResults(textArea);
-                return;
             }
             break;
         case keymap["ChooseFirstOrSelected"]:
@@ -788,7 +858,7 @@ function navigateInList(textArea, event) {
 async function setup() {
     // Load key bindings
     keymap = (await readFile(`${tagBasePath}/keymap.json`, true));
-    
+
     // Load colors
     CFG["colors"] = (await readFile(`${tagBasePath}/colors.json`, true));
 
@@ -802,7 +872,7 @@ async function setup() {
     let applySettingsButton = gradioApp().querySelector("#tab_settings #settings_submit") || gradioApp().querySelector("#tab_settings > div > .gr-button-primary");
     applySettingsButton?.addEventListener("click", () => {
         // Wait 500ms to make sure the settings have been applied to the webui opts object
-        setTimeout(async () => { 
+        setTimeout(async () => {
             await syncOptions();
         }, 500);
     });
@@ -811,12 +881,20 @@ async function setup() {
     let commonQueryPart = "[id^=setting_tac] > label >";
     quicksettings?.querySelectorAll(`${commonQueryPart} input, ${commonQueryPart} textarea, ${commonQueryPart} select`).forEach(e => {
         e.addEventListener("change", () => {
-            setTimeout(async () => { 
+            setTimeout(async () => {
                 await syncOptions();
             }, 500);
         });
     });
 
+    // Add change listener to model dropdown to react to model changes
+    let modelDropdown = gradioApp().querySelector("#setting_sd_model_checkpoint select");
+    currentModelName = modelDropdown.value;
+    modelDropdown?.addEventListener("change", () => {
+        setTimeout(() => {
+            currentModelName = modelDropdown.value;
+        }, 100);
+    });
     // Add mutation observer for the model hash text to also allow hash-based blacklist again
     let modelHashText = gradioApp().querySelector("#sd_checkpoint_hash");
     if (modelHashText) {
@@ -825,14 +903,6 @@ async function setup() {
             for (const mutation of mutationList) {
                 if (mutation.type === "attributes" && mutation.attributeName === "title") {
                     currentModelHash = mutation.target.title;
-                    let modelDropdown = gradioApp().querySelector("#setting_sd_model_checkpoint span.single-select")
-                    if (modelDropdown) {
-                        currentModelName = modelDropdown.textContent;
-                    } else {
-                        // Fallback for older versions
-                        modelDropdown = gradioApp().querySelector("#setting_sd_model_checkpoint select");
-                        currentModelName = modelDropdown.value;
-                    }
                 }
             }
         });
@@ -874,6 +944,7 @@ async function setup() {
             area.addEventListener('focusout', debounce(() => hideResults(area), 400));
             // Add up and down arrow event listener
             area.addEventListener('keydown', (e) => navigateInList(area, e));
+            area.addEventListener('focusout', (e) => inputWords(area));//aliu
             // CompositionEnd fires after the user has finished IME composing
             // We need to block hide here to prevent the enter key from insta-closing the results
             area.addEventListener('compositionend', () => {
@@ -892,7 +963,7 @@ async function setup() {
     let mode = gradioApp().querySelector('.dark') ? 0 : 1;
     // Check if we are on webkit
     let browser = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 ? "firefox" : "other";
-    
+
     let css = autocompleteCSS;
     // Replace vars with actual values (can't use actual css vars because of the way we inject the css)
     Object.keys(styleColors).forEach((key) => {
@@ -901,7 +972,7 @@ async function setup() {
     Object.keys(browserVars).forEach((key) => {
         css = css.replace(`var(${key})`, browserVars[key][browser]);
     })
-    
+
     if (acStyle.styleSheet) {
         acStyle.styleSheet.cssText = css;
     } else {
