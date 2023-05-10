@@ -202,6 +202,7 @@ async function syncOptions() {
             translationFile: opts["tac_translation.translationFile"],
             oldFormat: opts["tac_translation.oldFormat"],
             searchByTranslation: opts["tac_translation.searchByTranslation"],
+            liveTranslation: opts["tac_translation.liveTranslation"],
         },
         // Extra file settings
         extra: {
@@ -235,6 +236,13 @@ async function syncOptions() {
     if (CFG && newCFG.maxResults !== CFG.maxResults) {
         gradioApp().querySelectorAll(".autocompleteResults").forEach(r => {
             r.style.maxHeight = `${newCFG.maxResults * 50}px`;
+        });
+    }
+
+    // Remove ruby div if live preview was disabled
+    if (newCFG.translation.liveTranslation === false) {
+        [...gradioApp().querySelectorAll('.acRuby')].forEach(r => {
+            r.remove();
         });
     }
 
@@ -421,7 +429,7 @@ function addResultsToList(textArea, results, tagword, resetList) {
     // Find right colors from config
     let tagFileName = CFG.tagFile.split(".")[0];
     let tagColors = CFG.colorMap;
-    let mode = gradioApp().querySelector('.dark') ? 0 : 1;
+    let mode = document.querySelector('.dark') ? 0 : 1;
     let nextLength = Math.min(results.length, resultCount + CFG.resultStepLength);
 
     for (let i = resultCount; i < nextLength; i++) {
@@ -587,6 +595,8 @@ function updateSelectionStyle(textArea, newIndex, oldIndex) {
 }
 
 function updateRuby(textArea, prompt) {
+    if (!CFG.translation.liveTranslation) return;
+
     let ruby = gradioApp().querySelector('.acRuby' + getTextAreaIdentifier(textArea));
     if (!ruby) {
         let textAreaId = getTextAreaIdentifier(textArea);
@@ -1038,7 +1048,8 @@ async function setup() {
     // Add style to dom
     let acStyle = document.createElement('style');
     //let css = gradioApp().querySelector('.dark') ? autocompleteCSS_dark : autocompleteCSS_light;
-    let mode = gradioApp().querySelector('.dark') ? 0 : 1;
+    //let mode = gradioApp().querySelector(".dark") ? 0 : 1;
+    let mode = document.querySelector(".dark") ? 0 : 1;
     // Check if we are on webkit
     let browser = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 ? "firefox" : "other";
     
